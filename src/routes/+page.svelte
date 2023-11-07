@@ -3,6 +3,7 @@
 	import { gameOptions } from '../config/gameOptions';
 
 	let winText = '';
+	let spinning = false;
 
 	onMount(() => {
 		if (import.meta.env.SSR === false) {
@@ -13,12 +14,10 @@
 				}
 
 				preload() {
-					// loading pin image
-					this.load.image('pin', '/images/pin.png');
+					this.load.image('pin', '/images/lucky-spin.png');
 				}
 
 				create() {
-					// starting degrees
 					let startDegrees = -90;
 
 					// making a graphic object without adding it to the game
@@ -29,7 +28,7 @@
 					});
 
 					// adding a container to group wheel and icons
-					this.wheelContainer = this.add.container(600 / 2, 600 / 2);
+					this.wheelContainer = this.add.container(480 / 2, 480 / 2);
 
 					// array which will contain all icons
 					let iconArray = [];
@@ -83,7 +82,6 @@
 
 						// add slice text, if any
 						if (gameOptions.slices[i].sliceText != undefined) {
-							// the text
 							let text = this.add.text(
 								gameOptions.wheelRadius *
 									0.75 *
@@ -126,18 +124,19 @@
 					this.wheelContainer.add(iconArray);
 
 					// adding the pin in the middle of the canvas
-					this.pin = this.add.sprite(600 / 2, 600 / 2, 'pin');
+					this.pin = this.add.sprite(480 / 2, 480 / 2, 'pin');
 
 					// the game has just started = we can spin the wheel
 					this.canSpin = true;
 
-					// waiting for your input, then calling "spinWheel" function
-					this.input.on('pointerdown', this.spinWheel, this);
+					window.addEventListener('spinNow', () =>{
+            this.spinWheel()
+          });
 				}
 
 				spinWheel() {
-					// can we spin the wheel?
 					if (this.canSpin) {
+            spinning = true;
 						// the wheel will spin round for some times. This is just coreography
 						let rounds = Phaser.Math.Between(
 							gameOptions.wheelRounds.min,
@@ -194,7 +193,6 @@
 							callbackScope: this,
 							// function to be executed once the tween has been completed
 							onComplete: function (tween) {
-								// another tween to rotate a bit in the opposite direction
 								this.tweens.add({
 									targets: [this.wheelContainer],
 									angle: this.wheelContainer.angle - backDegrees,
@@ -206,16 +204,8 @@
 									ease: 'Cubic.ease',
 									callbackScope: this,
 									onComplete: function (tween) {
-										const eventData = {
-											text: gameOptions.slices[prize].text
-										};
-										const winEvent = new CustomEvent('winEvent', {
-											detail: eventData,
-											bubbles: false,
-											cancelable: false
-										});
-										window.dispatchEvent(winEvent);
-										// window.alert('You win' + gameOptions.slices[prize].text)
+										winText = gameOptions.slices[prize].text;
+                    spinning = false;
 										this.canSpin = true;
 									}
 								});
@@ -229,42 +219,46 @@
 					mode: Phaser.Scale.FIT,
 					autoCenter: Phaser.Scale.CENTER_BOTH,
 					parent: 'roulette-game',
-					width: 600,
-					height: 600
+					width: 480,
+					height: 480
 				},
 				transparent: true,
 				scene: [playGame]
 			};
 			const gameScene = new Phaser.Game(gameConfig);
 		}
-
-    window.addEventListener('winEvent', (e) => {
-      winText = e.detail.text
-    });
 	});
+
+  const onClickHandler = () =>{
+    const spinNow = new CustomEvent('spinNow');
+    window.dispatchEvent(spinNow);
+  }
 </script>
 
 <div class="main-wrapper">
 	<div class="backdrop" />
 	<div class="roulette-wrapper">
-		<div class="roulette">
+		<div class="roulette {spinning ? 'spinning' : ''}">
 			<div class="roulette__inner" id="roulette-game" />
 		</div>
-		<div class="information">
+		<div class="information {spinning ? 'hide' : ''}">
 			<button type="button" class="close">
 				<span />
 				<span />
 			</button>
 			<div class="information__inner">
-				<h2>Daily spin</h2>
 				{#if winText.length > 0}
-					<div class="prize-text">{winText}</div>
+				  <h2>You win!</h2>
+					<p>Congrats, you won <strong>{winText}</strong>. <br> Come back tomorrow  to play again.</p>
+				  <button type="button" class="btn btn--superslots">Continue</button>
+				{:else}
+				  <h2>Daily spin</h2>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vel nisi at elit malesuada
+            porta. Mauris lacinia efficitur tortor, vitae vulputate massa volutpat vel.
+          </p>
+				  <button type="button" class="btn btn--superslots" on:click={onClickHandler}>PLAY NOW</button>
 				{/if}
-				<p>
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vel nisi at elit malesuada
-					porta. Mauris lacinia efficitur tortor, vitae vulputate massa volutpat vel.
-				</p>
-				<button type="button" class="btn btn--superslots">PLAY NOW</button>
 			</div>
 		</div>
 	</div>
@@ -292,21 +286,22 @@
 	.roulette-wrapper {
 		display: flex;
 		align-items: center;
+    justify-content: center;
     flex-direction: column;
 		z-index: 1;
-		max-width: 90%;
+		width: 90%;
 	}
 
   @media screen and (min-width: 660px){
     .roulette-wrapper {
       flex-direction: row;
-      max-width: 80%;
+      width: 80%;
     }
   }
 
 	.roulette {
-    width: 22rem;
-    height: 22rem;
+    width: 90%;
+    aspect-ratio: 1/1;
 		margin-right: 0;
     margin-bottom: -10rem;
 		border-radius: 50%;
@@ -319,14 +314,25 @@
 		background-repeat: no-repeat;
 		background-size: 99% 99%;
 		background-position: center 7px;
+    position: relative;
 		z-index: 2;
+    transition: all .3s ease;
 	}
+
+  .roulette.spinning {
+    margin-right: 0;
+    margin-bottom: -90%;
+  }
 
   @media screen and (min-width: 660px){
     .roulette {
-      width: 35rem;
-		  height: 35rem;
+      width: 50%;
+      max-width: 35rem;
       margin-right: -15rem;
+      margin-bottom: 0;
+    }
+    .roulette.spinning{
+      margin-right: -50%;
       margin-bottom: 0;
     }
   }
@@ -351,7 +357,16 @@
 		background-color: #671f70;
 		color: #ffffff;
 		position: relative;
+    opacity: 1;
+    transform: translate(0, 0);
+    transition: all .35s ease;
 	}
+
+  .information.hide{
+    visibility: hidden;
+    opacity: 0;
+    transform: translate(0, -20%);
+  }
 
 	.information__inner {
 		max-width: 100%;
@@ -359,23 +374,27 @@
 
   @media screen and (min-width: 660px){
     .information {
-      width: 40%;
+      width: 35%;
       min-height: 400px;
 		  justify-content: center;
-      padding: 2rem 2rem 2rem 25%;
+      padding: 2rem 2rem 2rem 20%;
     }
 
     .information__inner {
-      max-width: 60%;
+      max-width: 80%;
+    }
+
+    .information.hide{
+      transform: translate(-20%, 0);
     }
   }
 
 	.information__inner > h2 {
-		margin-bottom: 1rem;
+		margin-bottom: 1.5rem;
 	}
 
 	.information__inner > .btn {
-		margin-top: 1rem;
+		margin-top: 1.5rem;
 	}
 
 	.btn {
