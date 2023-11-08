@@ -9,7 +9,6 @@ export const gameOptions = {
             sliceText: '1000 USD',
             sliceTextStyle: {
                 fontFamily: 'sans-serif',
-                fontSize: 18,
             }
         },
         {
@@ -21,7 +20,6 @@ export const gameOptions = {
             sliceText: '35 USD',
             sliceTextStyle: {
                 fontFamily: 'sans-serif',
-                fontSize: 18,
             }
         },
         {
@@ -33,7 +31,6 @@ export const gameOptions = {
             sliceText: 'FREE SPIN',
             sliceTextStyle: {
                 fontFamily: 'sans-serif',
-                fontSize: 18,
             }
         },
         {
@@ -45,7 +42,6 @@ export const gameOptions = {
             sliceText: '1500 USD',
             sliceTextStyle: {
                 fontFamily: 'sans-serif',
-                fontSize: 18
             }
         },
         {
@@ -57,7 +53,6 @@ export const gameOptions = {
             sliceText: '10 USD',
             sliceTextStyle: {
                 fontFamily: 'sans-serif',
-                fontSize: 18
             }
         },
         {
@@ -69,7 +64,6 @@ export const gameOptions = {
             sliceText: 'FREE SPIN',
             sliceTextStyle: {
                 fontFamily: 'sans-serif',
-                fontSize: 18
             }
         },
         {
@@ -81,7 +75,6 @@ export const gameOptions = {
             sliceText: '20 USD',
             sliceTextStyle: {
                 fontFamily: 'sans-serif',
-                fontSize: 18
             }
         },
         {
@@ -93,7 +86,6 @@ export const gameOptions = {
             sliceText: 'FREE SPIN',
             sliceTextStyle: {
                 fontFamily: 'sans-serif',
-                fontSize: 18
             }
         }
     ],
